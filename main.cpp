@@ -11,7 +11,9 @@ int main()
 {
 	start_driver();
 	cout << endl;
-
+	
+	// Change WINDOW NAME to the target application window's name
+	// Change DLL to the injected DLL file
 	inject_the_honey(xor_a("The Hive (Window Name)"), xor_w(L"The Honey (dll)"));
 
 	cout << endl;
