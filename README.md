@@ -1,5 +1,5 @@
 # Honeycomb
-
+---
 Injector that is detected on most modern clients. The shell code was published on GH Forums and I used it as my base for the injection.
 
 #### Detected & no longer supported
