@@ -5,6 +5,7 @@
 #include "inject/injector.h"
 #include "api/drvutils.h"
 
+// Start injector
 int main()
 {
 	start_driver();
