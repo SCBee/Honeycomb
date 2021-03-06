@@ -7,6 +7,8 @@ c_driver::c_driver()
 {
 /**/
 }
+
+//  Init driver
 NTSTATUS c_driver::send_serivce(ULONG ioctl_code, LPVOID io, DWORD size)
 {
 	if (h_driver == INVALID_HANDLE_VALUE)
@@ -17,10 +19,15 @@ NTSTATUS c_driver::send_serivce(ULONG ioctl_code, LPVOID io, DWORD size)
 
 	return STATUS_SUCCESS;
 }
+
+// Attach to TARGET PROCESS with ProcessID (pid)
 void c_driver::attach_process(DWORD pid)
 {
 	process_id = pid;
 }
+
+// Get module headers
+// If confused, recognize that programs in memory are called modules
 NTSTATUS c_driver::get_module_information_ex(const wchar_t* name, pget_module_information mod)
 {
 	if (h_driver == INVALID_HANDLE_VALUE)
@@ -36,6 +43,8 @@ NTSTATUS c_driver::get_module_information_ex(const wchar_t* name, pget_module_in
 
 	return STATUS_SUCCESS;
 }
+
+// Read TARGET PROGRAM mem
 NTSTATUS c_driver::read_memory_ex(PVOID base, PVOID buffer, DWORD size)
 {
 	copy_memory req = { 0 };
@@ -48,6 +57,8 @@ NTSTATUS c_driver::read_memory_ex(PVOID base, PVOID buffer, DWORD size)
 
 	return send_serivce(ioctl_copy_memory, &req, sizeof(req));
 }
+
+// Write TARGET PROGRAM mem
 NTSTATUS c_driver::write_memory_ex(PVOID base, PVOID buffer, DWORD size)
 {
 	copy_memory req = { 0 };
@@ -60,6 +71,8 @@ NTSTATUS c_driver::write_memory_ex(PVOID base, PVOID buffer, DWORD size)
 
 	return send_serivce(ioctl_copy_memory, &req, sizeof(req));
 }
+
+// Set protect attributes to mem region
 NTSTATUS c_driver::protect_memory_ex(uint64_t base, uint64_t size, PDWORD protection)
 {
 	protect_memory req = { 0 };
@@ -71,6 +84,8 @@ NTSTATUS c_driver::protect_memory_ex(uint64_t base, uint64_t size, PDWORD protec
 
 	return send_serivce(ioctl_protect_memory, &req, sizeof(req));
 }
+
+// Allocates memory that we can use (this is where our trampoline will be)
 PVOID c_driver::alloc_memory_ex(DWORD size, DWORD protect)
 {
 	PVOID p_out_address = NULL;
@@ -85,6 +100,8 @@ PVOID c_driver::alloc_memory_ex(DWORD size, DWORD protect)
 
 	return p_out_address;
 }
+
+// Free our used memory (make sure we're not corrupting target)
 NTSTATUS c_driver::free_memory_ex(PVOID address)
 {
 	free_memory req = { 0 };
@@ -94,14 +111,19 @@ NTSTATUS c_driver::free_memory_ex(PVOID address)
 
 	return send_serivce(ioctl_free_memory, &req, sizeof(req));
 }
+
+// Create driver (IO)
 void c_driver::handle_driver()
 {
 	h_driver = CreateFileW(DVR_DEVICE_FILE, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
 }
+
+// CLEAN UP
 c_driver::~c_driver()
 {
 	CloseHandle(h_driver);
 }
+
 c_driver& c_driver::singleton()
 {
 	static c_driver p_object;
