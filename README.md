@@ -1,6 +1,6 @@
 # Honeycomb
 
-Injector that is detected on most modern clients. Most of the code was from a source found on GH forum and I changed the driver to work with some of my projects at the time.
+Injector that is detected on most modern clients. The shell code was published on GH Forums and I used it as my base for the injection.
 
 #### Detected & no longer supported
 ---
