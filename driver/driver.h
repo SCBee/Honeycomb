@@ -6,6 +6,8 @@
 #pragma warning(default : 4005)
 #include "defines.h"
 
+// Driver (Refer to driver.cpp for comments)
+
 class c_driver
 {
 public:
@@ -18,7 +20,7 @@ public:
 	void     handle_driver();
 	void     attach_process(DWORD pid);
 
-	NTSTATUS send_serivce(ULONG ioctl_code, LPVOID io, DWORD size);
+	NTSTATUS send_service(ULONG ioctl_code, LPVOID io, DWORD size);
 	NTSTATUS get_module_information_ex(const wchar_t* name, pget_module_information mod);
 	NTSTATUS read_memory_ex(PVOID base, PVOID buffer, DWORD size);
 	NTSTATUS write_memory_ex(PVOID base, PVOID buffer, DWORD size);
