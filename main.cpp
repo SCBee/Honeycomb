@@ -6,6 +6,7 @@
 #include "api/drvutils.h"
 
 // Start injector
+// The driver is the core of the program's functionality
 int main()
 {
 	start_driver();
