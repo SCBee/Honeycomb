@@ -1,5 +1,7 @@
 #pragma once
 
+// Just some stuff to make it easier to use
+
 ///////////////////////////////////////////////////////////
 #define offset_io_mirrore   0x2338
 #define file_device_mirrore 0x3009
