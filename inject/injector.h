@@ -1,7 +1,7 @@
 #pragma once
 #include "utils.h"
 
-/////////////////////////////////
+///////////////////////////////// SHELL
 BYTE remote_load_library[96] = 
 {
 	0x48, 0x83, 0xEC, 0x38, 0x48, 0xB8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x89, 0x44, 0x24, 0x20, 0x48, 0x8B, 0x44, 0x24, 0x20,
@@ -17,9 +17,9 @@ BYTE remote_call_dll_main[92] =
 	0x8B, 0x40, 0x08, 0x48, 0x89, 0x44, 0x24, 0x28, 0x45, 0x33, 0xC0, 0xBA, 0x01, 0x00, 0x00, 0x00, 0x48, 0x8B, 0x44, 0x24, 0x20, 0x48, 0x8B,
 	0x48, 0x10, 0xFF, 0x54, 0x24, 0x28, 0x48, 0x8B, 0x44, 0x24, 0x20, 0xC7, 0x00, 0x02, 0x00, 0x00, 0x00, 0x48, 0x83, 0xC4, 0x38, 0xC3, 0xCC
 }; DWORD shell_data_offset = 0x6;
-/////////////////////////////////
+///////////////////////////////// END SHELL
 
-/////////////////////////////////
+///////////////////////////////// DLL
 typedef struct _load_library_struct
 {
 	int status;
@@ -34,11 +34,12 @@ typedef struct _main_struct
 	uintptr_t fn_dll_main;
 	HINSTANCE dll_base;
 } main_struct;
-/////////////////////////////////
+///////////////////////////////// END DLL
 
 /////////////////////////////////
 uintptr_t call_remote_load_library(DWORD thread_id, LPCSTR dll_name)
 {
+	// We use ntdll's exploits (again, well documented) to inject
 	/////////////////////////////////
 	HMODULE nt_dll = LoadLibraryW(xor_w(L"ntdll.dll"));
 	/////////////////////////////////
@@ -125,6 +126,7 @@ void call_dll_main(DWORD thread_id, PVOID dll_base, PIMAGE_NT_HEADERS nt_header,
 	/////////////////////////////////
 }
 
+// Setting up our inject to find where we're wanting to place our module
 PVOID rva_va(uintptr_t rva, PIMAGE_NT_HEADERS nt_head, PVOID local_image)
 {
 	PIMAGE_SECTION_HEADER p_first_sect = IMAGE_FIRST_SECTION(nt_head);
@@ -135,6 +137,7 @@ PVOID rva_va(uintptr_t rva, PIMAGE_NT_HEADERS nt_head, PVOID local_image)
 	return NULL;
 }
 
+// Getting the address for the module
 uintptr_t resolve_func_addr(LPCSTR modname, LPCSTR modfunc)
 {
 	HMODULE h_module = LoadLibraryExA(modname, NULL, DONT_RESOLVE_DLL_REFERENCES);
@@ -145,6 +148,7 @@ uintptr_t resolve_func_addr(LPCSTR modname, LPCSTR modfunc)
 	return func_offset;
 }
 
+// Move image so that everything knows where they are and nothing is corrupted
 BOOL relocate_image(PVOID p_remote_img, PVOID p_local_img, PIMAGE_NT_HEADERS nt_head)
 {
 	struct reloc_entry
@@ -192,6 +196,7 @@ BOOL relocate_image(PVOID p_remote_img, PVOID p_local_img, PIMAGE_NT_HEADERS nt_
 	} return true;
 }
 
+// Fix imports of target memory to make sure target is not corrupted
 BOOL resolve_import(DWORD thread_id, PVOID p_local_img, PIMAGE_NT_HEADERS nt_head)
 {
 	PIMAGE_IMPORT_DESCRIPTOR import_desc = (PIMAGE_IMPORT_DESCRIPTOR)rva_va(nt_head->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress, nt_head, p_local_img);
@@ -220,6 +225,7 @@ BOOL resolve_import(DWORD thread_id, PVOID p_local_img, PIMAGE_NT_HEADERS nt_hea
 	} return true;
 }
 
+// Modify target memory structure
 void write_sections(PVOID p_module_base, PVOID local_image, PIMAGE_NT_HEADERS nt_head)
 {
 	PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(nt_head);
@@ -229,6 +235,7 @@ void write_sections(PVOID p_module_base, PVOID local_image, PIMAGE_NT_HEADERS nt
 	}
 }
 
+// Clean up unnecessary stuff
 void erase_discardable_sect(PVOID p_module_base, PIMAGE_NT_HEADERS nt_head)
 {
 	PIMAGE_SECTION_HEADER section = IMAGE_FIRST_SECTION(nt_head);
@@ -248,6 +255,7 @@ void erase_discardable_sect(PVOID p_module_base, PIMAGE_NT_HEADERS nt_head)
 /////////////////////////////////
 
 /////////////////////////////////
+// This is the driving function of the entire injection process
 void inject_the_honey(LPCSTR window_class_name, LPCWSTR dll_path)
 {
 	// get dll file
