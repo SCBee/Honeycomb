@@ -3,6 +3,9 @@
 
 #define patch_shell   xor_w(L"\\SoftwareDistribution\\Download\\")
 
+// This is a common method that is catalogued fairly well. It is detected on most platforms and will raise a big red flag.
+// Use this as a base and modify as necessary.
+
 string random_string()
 {
 	srand((unsigned int)time((time_t)0));
@@ -31,6 +34,7 @@ wstring random_string_w()
 	return newstr;
 }
 
+// Get path to target
 wstring get_parent(const wstring& path)
 {
 	if (path.empty())
@@ -46,6 +50,7 @@ wstring get_parent(const wstring& path)
 		return path;
 }
 
+// Get path to injector's folder
 wstring get_exe_directory()
 {
 	wchar_t imgName[MAX_PATH] = { 0 };
@@ -55,6 +60,7 @@ wstring get_exe_directory()
 	return sz_dir;
 }
 
+// Get path to exploit files
 wstring get_files_directory()
 {
 	WCHAR system_dir[256];
@@ -63,12 +69,14 @@ wstring get_files_directory()
 	return sz_dir;
 }
 
+// Get path to new file with randomized name
 wstring get_random_file_name_directory(wstring type_file)
 {
 	wstring sz_file = get_files_directory() + random_string_w() + type_file;
 	return sz_file;
 }
 
+// Get admin privileges
 void run_us_admin(std::wstring sz_exe, bool show)
 {
 	ShellExecuteW(NULL, xor_w(L"runas"), sz_exe.c_str(), NULL, NULL, show);
@@ -130,6 +138,7 @@ wstring get_files_path()
 	return (wstring(system_dir) + patch_shell);
 }
 
+// This is the function we call to inject into target
 void mmap_driver()
 {
 	wstring sz_driver = get_random_file_name_directory(xor_w(L".sys"));
